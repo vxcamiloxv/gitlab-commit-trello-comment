@@ -17,16 +17,16 @@
 # Check that networking is up.
 [ "$NETWORKING" = "no" ] && exit 0
 
-prog="/var/lib/gitlab-commit-trello-comment/gitlab-commit-trello-comment.py"
+prog="/opt/gitlab/scripts/gitlab-commit-trello-comment/gitlab-commit-trello-comment.py"
 PROG_USER="puppet"
 RETVAL=0
 
 start () {
-        echo -n "Starting $prog"
-        /usr/bin/sudo -u $PROG_USER  "$prog" &
-        RETVAL=$?
-        [ $RETVAL -eq 0 ] && success || failure
-        echo
+    echo -n "Starting $prog"
+    /usr/bin/sudo -u $PROG_USER  "$prog" &
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && success || failure
+    echo
 }
 
 stop () {

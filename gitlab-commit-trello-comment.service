@@ -1,0 +1,17 @@
+[Unit]
+Description=Gitlab commit Trello comment
+Requires=network.target
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/gitlab/scripts/
+ExecStart=/opt/gitlab/scripts/gitlab-commit-trello-comment/gitlab-commit-trello-comment.py
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=gitlab-commit-trello-comment
+User=gitlab
+Group=gitlab
+Environment='NODE_ENV=production'
+
+[Install]
+WantedBy=multi-user.target
