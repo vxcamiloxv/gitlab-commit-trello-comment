@@ -123,6 +123,10 @@ class webhookReceiver(BaseHTTPRequestHandler):
 ----
 %s''' % (author, repo, repo_url, branch, branch_url, git_hash, git_hash_url, comment)
             for card_values in card_values_list:
+                #Remove empty tuples
+                card_values = filter(None, card_values)
+
+                #Set card en board values
                 card_short_id = int(card_values[0])
                 board_name = ''
 
