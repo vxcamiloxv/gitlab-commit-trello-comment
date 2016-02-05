@@ -70,7 +70,7 @@ class webhookReceiver(BaseHTTPRequestHandler):
             for board in client.get_boards():
                 board_information = board.get_board_information()
                 if to_snakecase(board_information['name']) == to_snakecase(board_name):
-                    log.debug("Change borad to %s" % (board_name))
+                    log.debug("Change board to %s" % (board_name))
                     board_id = board_information['id']
         try:
             board = trolly_board.Board(client, board_id)
@@ -78,7 +78,8 @@ class webhookReceiver(BaseHTTPRequestHandler):
             result = card.add_comments(comment)
             log.debug("Success post comment in card #%d, [\n %s \n]" % (card_short_id, result['data']['text']))
         except:
-            log.debug("Board not found: %r" % (sys.exc_info()[0]))
+            not_found = board_name or board_id
+            log.debug("Board %s not found: %r" % (str(not_found), sys.exc_info()[0]))
 
     def do_POST(self):
         """
