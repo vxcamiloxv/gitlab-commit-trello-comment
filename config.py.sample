@@ -6,7 +6,9 @@ trello_key = ''
 trello_token = ''
 board_id = ''
 
-gitlab_url = "https://sample.com"
+gitlab_url = 'https://sample.com'
+server_name = ''
+server_port = 9000
 
 log_file = './webhook.log'
 log_max_size = 25165824         # 24 MB

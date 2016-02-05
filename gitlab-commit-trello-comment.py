@@ -2,6 +2,7 @@
 #
 # Copyright (C) 2012 Shawn Sterling <shawn@systemtemplar.org>
 # Copyright (C) 2013 Xiongfei(Alex) Guo <xfguo@credosemi.com>
+# Copyright (C) 2016 Camilo QS <vxcamiloxv@openmailbox.org>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,6 +31,7 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import os
 import re
+import sys
 import json
 import logging
 import logging.handlers
@@ -54,16 +56,26 @@ log_handler.setFormatter(f)
 log.addHandler(log_handler)
 
 class webhookReceiver(BaseHTTPRequestHandler):
-    def comment_to_trello(self, card_short_id, comment):
+    def comment_to_trello(self, card_short_id, comment, board_id, board_name = ''):
         log.debug("Try comment on card #%d, [\n%s\n]" % (card_short_id, comment))
         trello_key = config.trello_key
         trello_token = config.trello_token
-        board_id = config.board_id
-        
+
         client = trolly_client.Client(trello_key, user_auth_token = trello_token)
-        board = trolly_board.Board(client, board_id)
-        card = board.getCard(str(card_short_id))
-        card.addComments(comment)
+
+        if board_name:
+            for board in client.get_boards():
+                board_information = board.get_board_information()
+                if to_snakecase(board_information['name']) == to_snakecase(board_name):
+                    log.debug("Change borad to %s" % (board_name))
+                    board_id = board_information['id']
+        try:
+            board = trolly_board.Board(client, board_id)
+            card = board.get_card(str(card_short_id))
+            result = card.add_comments(comment)
+            log.debug("Success post comment in card #%d, [\n %s \n]" % (card_short_id, result['data']['text']))
+        except:
+            log.debug("Board not found: %r" % (sys.exc_info()[0]))
 
     def do_POST(self):
         """
@@ -89,10 +101,16 @@ class webhookReceiver(BaseHTTPRequestHandler):
         repo_url = ''.join((config.gitlab_url, namespace, '/', repo))
         branch = re.split('/', post['ref'])[-1]
         branch_url = repo_url + '/commits/%s' % branch
+        board_id_path = self.path.replace('/', '')
+        board_id = config.board_id
+        if board_id_path:
+            board_id = board_id_path
+
         log.debug(pprint.pformat(post))
-        
+
         for commit in post['commits']:
-            card_short_id_list = map(int, re.findall('#([1-9]+)', commit['message']))
+            card_values_list = re.findall('#([0-9]+)\s+(\[.*?])?', commit['message'], flags=re.IGNORECASE)
+            board_name_global = re.findall('(board|borad|@)(:?)(\s+)?\[(.*)]', commit['message'], flags=re.IGNORECASE)
             git_hash = commit['id'][:7]
             git_hash_url = repo_url + '/commit/%s' % git_hash
             author = commit['author']['name']
@@ -101,19 +119,36 @@ class webhookReceiver(BaseHTTPRequestHandler):
 \[repo: [%s](%s) | branch: [%s](%s) | hash: [%s](%s)\]
 ----
 %s''' % (author, repo, repo_url, branch, branch_url, git_hash, git_hash_url, comment)
-            for card_short_id in card_short_id_list:
-                self.comment_to_trello(card_short_id, trello_comment)
+            for card_values in card_values_list:
+                card_short_id = int(card_values[0])
+                board_name = ''
+
+                if len(card_values) >= 2:
+                    board_name = re.sub(r'\[|\]', '', card_values[1])
+                elif len(board_name_global):
+                    board_name = board_name_global[0][-1]
+
+                self.comment_to_trello(card_short_id, trello_comment, board_id, board_name)
+
+def to_snakecase(s):
+    return re.sub("([\s])", "-", s).lower().lstrip("-")
 
 def main():
     """
         the main event.
     """
     try:
-        server = HTTPServer(('', 9000), webhookReceiver)
-        log.info('started web server...')
+        server_port = config.server_port or 9000
+        server_name = config.server_name or ''
+        server = HTTPServer((server_name, int(server_port)), webhookReceiver)
+        msg_run = 'started web server...'
+        log.info(msg_run)
+        print(msg_run)
         server.serve_forever()
     except KeyboardInterrupt:
-        log.info('ctrl-c pressed, shutting down.')
+        msg_down = 'ctrl-c pressed, shutting down.'
+        log.info(msg_down)
+        print(msg_down)
         server.socket.close()
 
 if __name__ == '__main__':
