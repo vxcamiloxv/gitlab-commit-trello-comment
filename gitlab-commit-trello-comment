@@ -17,7 +17,7 @@
 # Check that networking is up.
 [ "$NETWORKING" = "no" ] && exit 0
 
-prog="/var/lib/puppet/gitlab-commit-trello-comment/gitlab-commit-trello-comment.py"
+prog="/var/lib/gitlab-commit-trello-comment/gitlab-commit-trello-comment.py"
 PROG_USER="puppet"
 RETVAL=0
 
