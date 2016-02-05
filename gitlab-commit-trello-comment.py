@@ -23,6 +23,9 @@
 # modify from gitlab-webhook-receiver: a script for gitlab & puppet integration
 #
 # The latest version of git will be found on:
+# https://github.com/vxcamiloxv/gitlab-commit-trello-comment
+#
+# Fork from:
 # https://github.com/xfguo/gitlab-commit-trello-comment
 #
 # The latest version of gitlab-webhook-receiver will be found on shawn-sterling's github page:
