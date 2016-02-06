@@ -123,9 +123,9 @@ class webhookReceiver(BaseHTTPRequestHandler):
 
             # Comment
             trello_comment = '''\[**%s** has a new commit about this card\]
-\[repo: [%s](%s) | branch: [%s](%s) | hash: [%s](%s)\]
+\[commit: [%s](%s) | branch: [%s](%s) | repo: [%s](%s)\]
 ----
-%s''' % (author, repo_name, repo_url, branch, branch_url, git_hash, git_hash_url, comment)
+%s''' % (author, git_hash, git_hash_url, branch, branch_url, repo_name, repo_url, comment)
             for card_values in card_values_list:
                 # Remove empty tuples
                 card_values = filter(None, card_values)
