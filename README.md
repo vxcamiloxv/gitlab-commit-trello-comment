@@ -4,6 +4,7 @@ gitlab-commit-trello-comment will monitor your gitlab commit with card number(li
 modified from gitlab-webhook-receiver project.
 
 You can set the board  in the following ways:
+
 - config.py with: board_id = 'HhKy35Jh'
 - hook url with: https://your.ip.hook.here:9000/borad_id
 - commit with:
@@ -22,12 +23,13 @@ pull the latest branches from a git repo.
 # Dependencies
 
 Before getting stated you will need install [Trolly](https://github.com/plish/Trolly) and httplib2 (reqired by trolly).
-
+```
     pip install trolly httplib2
-
+```
 or
-
+```
     pip install -r requirements.txt
+```
 
 
 # License
@@ -40,6 +42,23 @@ gitlab-commit-trello-comment is released under the [GPL v2](http://www.gnu.org/l
 ---------------------
 
 Copy the config.py.sample to config.py and fill your gitlab and trello info.
+
+###`trello_key`
+https://trello.com/1/appKey/generate
+
+###`trello_token`
+This is not so well explained in Trello, but I understood that you need to authorize the app with `trello_key` to access each board separatelly. To do that:
+
+https://trello.com/1/authorize?response_type=token&name=[BOARD+NAME+AS+SHOWN+IN+URL]&scope=read,write&expiration=never&key=[YOUR+trello_key+HERE]
+
+where [YOUR+trello_key+HERE] is the one you entered in the previous step, while [BOARD+NAME+AS...] is, well, what it says. If your board url is
+
+https://trello.com/b/XLvlTFVA/my-project
+
+then you should type in "my-project".
+
+###`board_id`
+It is the end of the URL when viewing the board. For example, for https://trello.com/b/XLvlTFVA/my-project, `board_id` is XLvlTFVA.
 
 (2) create the gitlab webhook
 -----------------------------
