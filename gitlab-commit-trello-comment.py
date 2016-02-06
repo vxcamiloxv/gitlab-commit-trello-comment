@@ -65,15 +65,17 @@ class webhookReceiver(BaseHTTPRequestHandler):
         trello_token = config.trello_token
 
         client = trolly_client.Client(trello_key, user_auth_token = trello_token)
+        board_class = None
 
         if board_name:
             for board in client.get_boards():
                 board_information = board.get_board_information()
                 if to_snakecase(board_information['name']) == to_snakecase(board_name):
                     log.debug("Change board to %s" % (board_name))
-                    board_id = board_information['id']
+                    board_class = board;
+                    break
         try:
-            board = trolly_board.Board(client, board_id)
+            board = board_class or trolly_board.Board(client, board_id)
             card = board.get_card(str(card_short_id))
             result = card.add_comments(comment)
             log.debug("Success post comment in card #%d, [\n %s \n]" % (card_short_id, result['data']['text']))
@@ -96,13 +98,12 @@ class webhookReceiver(BaseHTTPRequestHandler):
         self.wfile.write(message)
         log.debug('gitlab connection should be closed now.')
 
-        #parse data
+        # parse data
         post = json.loads(data_string)
-        repo = post['repository']['name']
-        #got namespace
-        namespace = (urlsplit(post['repository']['homepage'])[2]).split('/')[1]
-        namespace = ''.join(('/', namespace)) if namespace else namespace
-        repo_url = ''.join((config.gitlab_url, namespace, '/', repo))
+        repo = post['repository']
+        repo_name = repo['name']
+        # got some urls
+        repo_url = repo['homepage']
         branch = re.split('/', post['ref'])[-1]
         branch_url = repo_url + '/commits/%s' % branch
         board_id_path = self.path.replace('/', '')
@@ -116,18 +117,20 @@ class webhookReceiver(BaseHTTPRequestHandler):
             card_values_list = re.findall('#([0-9]+)\s+(\[.*?])?', commit['message'], flags=re.IGNORECASE)
             board_name_global = re.findall('(board|borad|@)(:?)(\s+)?\[(.*)]', commit['message'], flags=re.IGNORECASE)
             git_hash = commit['id'][:7]
-            git_hash_url = repo_url + '/commit/%s' % git_hash
+            git_hash_url = commit['url']
             author = commit['author']['name']
             comment = commit['message']
+
+            # Comment
             trello_comment = '''\[**%s** has a new commit about this card\]
 \[repo: [%s](%s) | branch: [%s](%s) | hash: [%s](%s)\]
 ----
-%s''' % (author, repo, repo_url, branch, branch_url, git_hash, git_hash_url, comment)
+%s''' % (author, repo_name, repo_url, branch, branch_url, git_hash, git_hash_url, comment)
             for card_values in card_values_list:
-                #Remove empty tuples
+                # Remove empty tuples
                 card_values = filter(None, card_values)
 
-                #Set card en board values
+                # Set card en board values
                 card_short_id = int(card_values[0])
                 board_name = ''
 
@@ -146,8 +149,14 @@ def main():
         the main event.
     """
     try:
-        server_port = config.server_port or 9000
-        server_name = config.server_name or ''
+        # Default values
+        server_port = 9000
+        server_name = ''
+        if hasattr(config, 'server_port'):
+            server_port = config.server_port
+        if hasattr(config, 'server_name'):
+            server_name = config.server_name
+        # Run server
         server = HTTPServer((server_name, int(server_port)), webhookReceiver)
         msg_run = 'started web server...'
         log.info(msg_run)
