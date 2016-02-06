@@ -3,12 +3,18 @@
 gitlab-commit-trello-comment will monitor your gitlab commit with card number(like #234) and push a format comment to that card of your trello board.
 modified from gitlab-webhook-receiver project.
 
-You can set the board  in the following ways
+You can set the board  in the following ways:
 - config.py with: board_id = 'HhKy35Jh'
 - hook url with: https://your.ip.hook.here:9000/borad_id
 - commit with:
-  + "Fix #234 [My Project] #235 [My Other Project] #236" -> Board by card and #236 get baord_id from config.py or hook url
-  + "Fix #234 [My Other project] #235 #236 @[My Project]" -> #235 and #236 cards inherited same board and
+  + Board by card and #236 get baord_id from config.py or hook url
+    ```
+    "Fix #234 [My Project] #235 [My Other Project] #236"
+    ```
+  + #235 and #236 cards inherited same board
+    ```
+    "Fix #234 [My Other project] #235 #236 @[My Project]"
+    ```
 
 gitlab-webhook-receiver is a script to receive http posts from gitlab and then
 pull the latest branches from a git repo.
