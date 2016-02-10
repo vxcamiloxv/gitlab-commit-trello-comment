@@ -61,11 +61,14 @@ log.addHandler(log_handler)
 class webhookReceiver(BaseHTTPRequestHandler):
     def comment_to_trello(self, card_short_id, comment, board_id, board_name = ''):
         log.debug("Try comment on card #%d, [\n%s\n]" % (card_short_id, comment))
+
+        move_pattern = re.compile(r'\b(close|fix)\b', flags=re.IGNORECASE)
         trello_key = config.trello_key
         trello_token = config.trello_token
 
         client = trolly_client.Client(trello_key, user_auth_token = trello_token)
         board_class = None
+        list_name = None
 
         if board_name:
             for board in client.get_boards():
@@ -79,9 +82,27 @@ class webhookReceiver(BaseHTTPRequestHandler):
             card = board.get_card(str(card_short_id))
             result = card.add_comments(comment)
             log.debug("Success post comment in card #%d, [\n %s \n]" % (card_short_id, result['data']['text']))
+
+            if hasattr(config, 'list_done') and move_pattern.search(comment):
+                list_name = config.list_done
+            elif hasattr(config, 'list_progress'):
+                list_name = config.list_progress
+
+            if list_name:
+                lists = board.get_lists()
+                log.debug("Try to move card to [%s] list" % (list_name))
+                for list in lists:
+                    list_information = list.get_list_information()
+                    to_list_name = list_information['name']
+                    if to_snakecase(to_list_name) == to_snakecase(list_name):
+                        try:
+                            card.update_card({'idList': list_information['id']})
+                            log.debug("Success move card to [%s] list" % (to_list_name))
+                        except:
+                            log.warn("List %s not found: %r" % (list_name), sys.exc_info()[0])
         except:
             not_found = board_name or board_id
-            log.debug("Board %s not found: %r" % (str(not_found), sys.exc_info()[0]))
+            log.warn("Board %s not found: %r" % (str(not_found), sys.exc_info()[0]))
 
     def do_POST(self):
         """

@@ -5,8 +5,9 @@ import logging
 trello_key = ''
 trello_token = ''
 board_id = ''
+list_progress = 'In Progress'
+list_done = 'DONE'
 
-gitlab_url = 'https://sample.com'
 server_name = ''
 server_port = 9000
 

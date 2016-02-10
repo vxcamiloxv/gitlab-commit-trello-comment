@@ -60,12 +60,18 @@ then you should type in "my-project".
 ###`board_id`
 It is the end of the URL when viewing the board. For example, for https://trello.com/b/XLvlTFVA/my-project, `board_id` is XLvlTFVA.
 
+###`list_progress`
+Name of list to move card if not have words like 'close' or 'fix'.
+
+###`list_done`
+Name of list to move card if have words like **'close' or 'fix'** regardless of whether is uppercase or lowercase .
+
 (2) create the gitlab webhook
 -----------------------------
 
 In gitlab, as admin, go to "Hooks" tab, create hook as: http://your.ip.hook.here:9000
 
-or change the port in config.py
+or change the **'port'** in config.py
 
 (3) Optional init script
 ------------------------
