@@ -1,6 +1,6 @@
 # Introduction
 
-gitlab-commit-trello-comment will monitor your gitlab commit with card number(like #234) and push a format comment to that card of your trello board.
+gitlab-commit-trello-comment will monitor your gitlab commit with card number(like #234) and push a format comment and moves that card of your trello board.
 modified from gitlab-webhook-receiver project.
 
 You can set the board  in the following ways:
